@@ -8,20 +8,20 @@ See [Plan.md](./Plan.md) for the full architecture and build-phase roadmap. See 
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Language | TypeScript (strict mode) |
-| Backend Framework | Express.js |
-| Frontend | React 19 + Vite + TypeScript (`frontend-ui/`) |
-| Real-Time | Socket.io (+ Redis adapter for horizontal scaling) |
-| Database | MongoDB (Mongoose ODM) |
-| Auth | JWT (jsonwebtoken, bcrypt) |
-| Validation | Zod |
-| Rate Limiting | `express-rate-limit` (REST) + custom sliding-window (Socket.io) |
-| Logging | Winston |
-| Testing | Jest + Supertest + ts-jest |
-| Containerization | Docker (multi-stage) + docker-compose |
-| CI/CD | GitHub Actions |
+| Layer             | Technology                                                      |
+| ----------------- | --------------------------------------------------------------- |
+| Language          | TypeScript (strict mode)                                        |
+| Backend Framework | Express.js                                                      |
+| Frontend          | React 19 + Vite + TypeScript (`frontend-ui/`)                   |
+| Real-Time         | Socket.io (+ Redis adapter for horizontal scaling)              |
+| Database          | MongoDB (Mongoose ODM)                                          |
+| Auth              | JWT (jsonwebtoken, bcrypt)                                      |
+| Validation        | Zod                                                             |
+| Rate Limiting     | `express-rate-limit` (REST) + custom sliding-window (Socket.io) |
+| Logging           | Winston                                                         |
+| Testing           | Jest + Supertest + ts-jest                                      |
+| Containerization  | Docker (multi-stage) + docker-compose                           |
+| CI/CD             | GitHub Actions                                                  |
 
 ---
 
@@ -29,10 +29,10 @@ See [Plan.md](./Plan.md) for the full architecture and build-phase roadmap. See 
 
 This is a two-part project — a backend (project root) and a frontend (`frontend-ui/`) — run as two separate processes in local development:
 
-| Part | Location | Runs on |
-|---|---|---|
+| Part                       | Location              | Runs on                 |
+| -------------------------- | --------------------- | ----------------------- |
 | Backend (REST + Socket.io) | project root (`src/`) | `http://localhost:5000` |
-| Frontend (React UI) | `frontend-ui/` | `http://localhost:5173` |
+| Frontend (React UI)        | `frontend-ui/`        | `http://localhost:5173` |
 
 ---
 
@@ -40,12 +40,12 @@ This is a two-part project — a backend (project root) and a frontend (`fronten
 
 ### Prerequisites
 
-| Tool | Required? | Notes |
-|---|---|---|
-| Node.js 20.x | Yes | Matches the CI/Docker runtime |
-| MongoDB | Yes | Local install (Homebrew/apt) or via Docker |
-| Redis | Optional | Only needed for multi-instance scaling (`REDIS_ENABLED=true`) |
-| Docker + Docker Compose | Optional | Alternative to running Mongo/Redis/app natively |
+| Tool                    | Required? | Notes                                                         |
+| ----------------------- | --------- | ------------------------------------------------------------- |
+| Node.js 20.x            | Yes       | Matches the CI/Docker runtime                                 |
+| MongoDB                 | Yes       | Local install (Homebrew/apt) or via Docker                    |
+| Redis                   | Optional  | Only needed for multi-instance scaling (`REDIS_ENABLED=true`) |
+| Docker + Docker Compose | Optional  | Alternative to running Mongo/Redis/app natively               |
 
 ---
 
@@ -54,17 +54,20 @@ This is a two-part project — a backend (project root) and a frontend (`fronten
 ### Option A — Run everything locally (Node + native MongoDB)
 
 **1. Install dependencies**
+
 ```bash
 npm install
 ```
 
 **2. Configure environment**
+
 ```bash
 cp .env.example .env
 # Open .env and set a real JWT_SECRET (any long random string for local dev is fine)
 ```
 
 **3. Start MongoDB** (pick whichever matches your setup)
+
 ```bash
 # macOS (Homebrew)
 brew services start mongodb-community
@@ -75,12 +78,15 @@ sudo systemctl start mongod
 # Or run MongoDB directly via Docker (no local install needed)
 docker run -d --name mongo -p 27017:27017 mongo:7
 ```
+
 Verify it's up:
+
 ```bash
 mongosh --eval "db.adminCommand('ping')"
 ```
 
 **4. (Optional) Start Redis** — only if you want to test the horizontal-scaling / Redis adapter path
+
 ```bash
 # macOS (Homebrew)
 brew install redis      # first time only
@@ -90,21 +96,34 @@ brew services start redis
 sudo apt-get install redis-server   # first time only
 sudo systemctl start redis
 
+# Windows (PowerShell with Docker Desktop)
+docker run -d --name redis -p 6379:6379 redis:7-alpine
+
 # Or via Docker (no local install needed)
 docker run -d --name redis -p 6379:6379 redis:7-alpine
 ```
+
 Verify it's up:
+
 ```bash
+# Windows PowerShell (when redis-cli is not installed locally)
+docker exec redis redis-cli ping   # should reply: PONG
+
+# macOS/Linux
 redis-cli ping   # should reply: PONG
 ```
+
 Then enable it for the app by setting in your `.env`:
+
 ```
 REDIS_ENABLED=true
 REDIS_URL=redis://localhost:6379
 ```
+
 If you skip this step, leave `REDIS_ENABLED=false` (the default) — the app runs perfectly fine single-instance without Redis.
 
 **5. Start the app**
+
 ```bash
 # Dev mode (hot-reload via ts-node-dev)
 npm run dev
@@ -113,7 +132,9 @@ npm run dev
 npm run build
 npm start
 ```
+
 You should see in the logs:
+
 ```
 MongoDB connected: localhost
 Socket.io running with default in-memory adapter (single instance mode)   <- or "Redis adapter attached" if enabled
@@ -122,6 +143,7 @@ Socket.io server initialized and attached
 ```
 
 **6. Verify it's alive**
+
 ```bash
 curl http://localhost:5000/health
 # {"status":"ok","uptime":...}
@@ -146,6 +168,7 @@ docker compose logs -f app
 # Stop and remove containers + volumes (fresh state next time)
 docker compose down -v
 ```
+
 The containerized app runs with `REDIS_ENABLED=true` by default (see `docker-compose.yml`), so you get the Redis-adapter-enabled configuration out of the box — no extra setup required. The app is reachable at `http://localhost:5000` exactly the same as Option A.
 
 ---
@@ -172,12 +195,14 @@ npm run format         # Prettier format all files
 The React chat UI lives in the [frontend-ui](./frontend-ui) directory and talks to the backend over REST + Socket.io. Make sure the backend (Option A or B above) is already running before starting the frontend.
 
 **1. Install dependencies**
+
 ```bash
 cd frontend-ui
 npm install
 ```
 
 **2. Configure environment**
+
 ```bash
 cp .env.example .env
 # Defaults to VITE_API_BASE_URL=http://localhost:5000 — update only if your backend runs elsewhere
@@ -186,18 +211,23 @@ cp .env.example .env
 **3. Allow the frontend's origin in the backend CORS config**
 
 The Vite dev server runs on `http://localhost:5173` by default, but the backend's `.env.example` defaults `CLIENT_ORIGIN` to `http://localhost:3000`. Update the backend's `.env` (project root) so Socket.io/CORS accepts requests from the frontend:
+
 ```
 CLIENT_ORIGIN=http://localhost:5173
 ```
+
 Restart the backend after changing this.
 
 **4. Start the frontend dev server**
+
 ```bash
 npm run dev
 ```
+
 Vite will print the local URL (typically `http://localhost:5173`) — open it in your browser.
 
 **5. Use the app**
+
 - Sign up (or log in) with a username/email/password
 - Click **+** in the sidebar to search for another user by name and start a 1:1 chat
 - Send messages in real time; typing indicators, delivery/read ticks, and online status update live via Socket.io
@@ -231,6 +261,7 @@ npm install
 cp .env.example .env   # defaults to http://localhost:5000, adjust if needed
 npm run dev            # http://localhost:5173
 ```
+
 Make sure MongoDB (and optionally Redis) is running before starting the backend — see [Backend Setup](#backend-setup) above.
 
 ---
@@ -240,6 +271,7 @@ Make sure MongoDB (and optionally Redis) is running before starting the backend 
 Once the server is running (Option A or B above), here's an end-to-end example of exercising the REST + Socket.io API from a fresh terminal. Full request/response schemas are in [APIDoc.md](./APIDoc.md); a ready-to-import [postman_collection.json](./postman_collection.json) is also available.
 
 **1. Sign up two users**
+
 ```bash
 curl -s -X POST http://localhost:5000/api/auth/signup \
   -H "Content-Type: application/json" \
@@ -249,9 +281,11 @@ curl -s -X POST http://localhost:5000/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{"username":"bob","email":"bob@example.com","password":"password123"}'
 ```
+
 Each response includes a `data.token` (JWT) and `data.user._id` — save both for Alice and Bob; you'll need them below.
 
 **2. Log in (alternative to signup, once an account exists)**
+
 ```bash
 curl -s -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -259,33 +293,39 @@ curl -s -X POST http://localhost:5000/api/auth/login \
 ```
 
 **3. Get the current user's profile**
+
 ```bash
 curl -s http://localhost:5000/api/auth/me \
   -H "Authorization: Bearer <ALICE_TOKEN>"
 ```
 
 **4. Create a 1:1 conversation** (as Alice, with Bob's `_id`)
+
 ```bash
 curl -s -X POST http://localhost:5000/api/conversations \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <ALICE_TOKEN>" \
   -d '{"type":"1:1","members":["<BOB_USER_ID>"]}'
 ```
+
 Save the returned `data.conversation._id`.
 
 **5. List conversations** (with unread counts)
+
 ```bash
 curl -s http://localhost:5000/api/conversations \
   -H "Authorization: Bearer <ALICE_TOKEN>"
 ```
 
 **6. Fetch paginated message history**
+
 ```bash
 curl -s "http://localhost:5000/api/conversations/<CONVERSATION_ID>/messages?limit=20" \
   -H "Authorization: Bearer <ALICE_TOKEN>"
 ```
 
 **7. Send/receive real-time messages via Socket.io** (REST alone cannot send messages — use a Socket.io client). Quick Node.js snippet:
+
 ```js
 // save as try-socket.js, run with: node try-socket.js
 const { io } = require('socket.io-client');
@@ -313,6 +353,7 @@ socket.on('user:online', (p) => console.log('presence online:', p));
 socket.on('typing:start', (p) => console.log('typing:', p));
 socket.on('connect_error', (err) => console.error('connect error:', err.message));
 ```
+
 Run a second copy with Bob's token to see both sides of the conversation (messages, typing indicators, read receipts, presence) in real time. `socket.io-client` is already a project dev dependency, so `node try-socket.js` works from the project root without any extra installs.
 
 > See [APIDoc.md](./APIDoc.md#socketio-events) for the full list of Socket.io events (`message:send`, `message:delivered`, `message:read`, `typing:start`/`stop`, `user:online`/`offline`) with exact payload shapes.
@@ -362,26 +403,26 @@ frontend-ui/          # Frontend (React + Vite + TypeScript)
 
 See [.env.example](./.env.example) for the full list. Key variables:
 
-| Variable | Purpose | Default |
-|---|---|---|
-| `PORT` | HTTP server port | `5000` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/realtime-chat` |
-| `JWT_SECRET` | Secret used to sign/verify JWTs | *(required — no safe default in production)* |
-| `JWT_EXPIRES_IN` | JWT expiry duration | `7d` |
-| `CLIENT_ORIGIN` | Allowed CORS origin | `http://localhost:3000` (set to `http://localhost:5173` for the Vite dev server) |
-| `REDIS_ENABLED` | Enables the Socket.io Redis adapter for multi-instance scaling | `false` |
-| `REDIS_URL` | Redis connection string (only used if `REDIS_ENABLED=true`) | `redis://localhost:6379` |
-| `RATE_LIMIT_WINDOW_MS` | REST auth rate-limit window | `900000` (15 min) |
-| `RATE_LIMIT_MAX_REQUESTS` | Max REST auth requests per window per IP | `20` |
-| `SOCKET_RATE_LIMIT_MAX` | Max `message:send` calls per window per user | `10` |
-| `SOCKET_RATE_LIMIT_WINDOW_MS` | Socket.io rate-limit window | `10000` (10s) |
+| Variable                      | Purpose                                                        | Default                                                                          |
+| ----------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `PORT`                        | HTTP server port                                               | `5000`                                                                           |
+| `MONGODB_URI`                 | MongoDB connection string                                      | `mongodb://localhost:27017/realtime-chat`                                        |
+| `JWT_SECRET`                  | Secret used to sign/verify JWTs                                | _(required — no safe default in production)_                                     |
+| `JWT_EXPIRES_IN`              | JWT expiry duration                                            | `7d`                                                                             |
+| `CLIENT_ORIGIN`               | Allowed CORS origin                                            | `http://localhost:3000` (set to `http://localhost:5173` for the Vite dev server) |
+| `REDIS_ENABLED`               | Enables the Socket.io Redis adapter for multi-instance scaling | `false`                                                                          |
+| `REDIS_URL`                   | Redis connection string (only used if `REDIS_ENABLED=true`)    | `redis://localhost:6379`                                                         |
+| `RATE_LIMIT_WINDOW_MS`        | REST auth rate-limit window                                    | `900000` (15 min)                                                                |
+| `RATE_LIMIT_MAX_REQUESTS`     | Max REST auth requests per window per IP                       | `20`                                                                             |
+| `SOCKET_RATE_LIMIT_MAX`       | Max `message:send` calls per window per user                   | `10`                                                                             |
+| `SOCKET_RATE_LIMIT_WINDOW_MS` | Socket.io rate-limit window                                    | `10000` (10s)                                                                    |
 
 ### Frontend (`frontend-ui/.env`)
 
 See [frontend-ui/.env.example](./frontend-ui/.env.example). Key variable:
 
-| Variable | Purpose | Default |
-|---|---|---|
+| Variable            | Purpose                                    | Default                 |
+| ------------------- | ------------------------------------------ | ----------------------- |
 | `VITE_API_BASE_URL` | Base URL of the backend (REST + Socket.io) | `http://localhost:5000` |
 
 ---

@@ -23,7 +23,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
 
     steps:
       - name: Checkout repository
@@ -39,6 +39,14 @@ jobs:
         run: npm ci
 
       - name: Lint
+        run: npm run lint
+
+      - name: Install frontend dependencies
+        working-directory: frontend-ui
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: frontend-ui
         run: npm run lint
 
       - name: Type check
