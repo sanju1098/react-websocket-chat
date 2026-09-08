@@ -14,10 +14,7 @@ import { isConversationMember } from './conversation.service';
  * Throws 404 if the conversation doesn't exist or the sender isn't a member
  * (same error for both, to avoid leaking conversation existence).
  */
-export async function createMessage(
-  senderId: string,
-  input: SendMessageInput
-): Promise<IMessage> {
+export async function createMessage(senderId: string, input: SendMessageInput): Promise<IMessage> {
   const conversation = await Conversation.findOne({
     _id: input.conversationId,
     members: senderId,

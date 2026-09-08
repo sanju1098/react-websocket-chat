@@ -1,4 +1,3 @@
-
 ## Implementation Status by Phase
 
 ### Phase 0 — Project Setup
@@ -6,6 +5,7 @@
 > _No phase diagram available for Phase 0._
 
 **What was implemented:**
+
 - TypeScript project scaffold (`tsconfig.json`, strict mode)
 - Express app bootstrap with security middlewares: `helmet`, `cors`, JSON body parsing
 - HTTP request logging via `morgan` piped into `winston`
@@ -24,6 +24,7 @@
 ![Phase 1 — REST: Auth & Core Data APIs](./Phase%201.svg)
 
 **What was implemented:**
+
 - **Mongoose models:**
   - `User` — with bcrypt password hashing, `comparePassword()` instance method, and automatic password-hash stripping on JSON serialization
   - `Conversation` — supports `1:1` and `group` types, tracks `lastMessage` for preview
@@ -47,6 +48,7 @@
 ![Phase 2 — Socket.io Foundation](./Phase%202.svg)
 
 **What was implemented:**
+
 - **Socket.io server initialization** (`src/sockets/index.ts`) — attached to the same HTTP server as Express, with CORS configured from `CLIENT_ORIGIN`; exposes `getSocketServer()` so REST controllers can emit events in later phases
 - **Socket handshake JWT auth middleware** (`src/middlewares/socketAuth.middleware.ts`) — reads the token from `socket.handshake.auth.token` (or `Authorization` header as fallback), verifies it, and rejects the connection (`connect_error`) if missing/invalid/expired. On success, attaches the decoded payload to `socket.data.user`
 - **Typed Socket.io events** (`src/types/socket.d.ts`) — `ClientToServerEvents`, `ServerToClientEvents`, `SocketData` interfaces for full type-safety on `socket.emit`/`socket.on` calls, extended incrementally in later phases
@@ -65,6 +67,7 @@
 ![Phase 3 — Real-Time Messaging](./Phase%203.svg)
 
 **What was implemented:**
+
 - **`message.service.ts`** (`src/services/message.service.ts`) — verifies the sender is a member of the target conversation, persists the message to MongoDB, updates the conversation's `lastMessage` pointer (and `updatedAt`, so conversation lists sort by most recent activity), and populates sender details (`username`, `email`)
 - **`message:send` handler** (`src/sockets/handlers/message.handler.ts`) — validates the payload (Zod), calls the service, broadcasts `message:new` to every socket in the conversation's room (`socket.nsp.to(conversationId).emit(...)`, so the sender's other devices/tabs and all other members receive it), and acknowledges the sender with the persisted, serialized message
 - **`message:new` event** — typed server-to-client event carrying the full message payload (`_id`, `conversationId`, `senderId` (populated), `text`, `status`, `createdAt`, `updatedAt`) — same shape as the REST message history response for a single client-side rendering path
@@ -72,7 +75,7 @@
 - **Extended typed Socket.io events** (`src/types/socket.d.ts`) — added `SendMessagePayload`, `SocketMessagePayload`, `MessageSendAck` interfaces
 - **Integration tests** (Jest + `socket.io-client`) — 4 tests covering: message persisted + broadcast to all room members + conversation `lastMessage` updated (happy path), sender not a member of the conversation (edge case), empty/whitespace-only message text rejected (edge case), invalid `conversationId` format rejected (edge case)
 
-**Used for:** This is the core real-time chat functionality — actual message delivery. Messages sent by any client are durably persisted to MongoDB *before* being broadcast, so message history (via the Phase 1 REST endpoint) and real-time delivery are always consistent, and no message is lost if all recipients are temporarily offline (they'll see it next time they fetch history).
+**Used for:** This is the core real-time chat functionality — actual message delivery. Messages sent by any client are durably persisted to MongoDB _before_ being broadcast, so message history (via the Phase 1 REST endpoint) and real-time delivery are always consistent, and no message is lost if all recipients are temporarily offline (they'll see it next time they fetch history).
 
 **Socket.io Events Reference:** See [APIDoc.md](./APIDoc.md#socketio-events) for the full `message:send` / `message:new` event contracts (payload, acknowledgement, error cases).
 
@@ -83,10 +86,11 @@
 ![Phase 4 — Typing Indicators & Read Receipts](./Phase%204.svg)
 
 **What was implemented:**
+
 - **Shared membership helper** (`isConversationMember()` in `src/services/conversation.service.ts`) — extracted from the Phase 2 connection handler so all Phase 4 handlers (typing, receipts) reuse the same non-throwing membership check instead of duplicating query logic
 - **`message:delivered` handler** (`src/sockets/handlers/receipt.handler.ts`) — recipient's client confirms receipt of a message; server validates membership, advances the message status `sent` → `delivered` (never downgrades an already-`read` message), and broadcasts the update to the conversation room so the sender's UI reflects delivery in real time
 - **`message:read` handler** (`src/sockets/handlers/receipt.handler.ts`) — marks all unread messages in a conversation up to (and including) a given message as `read`; excludes the reader's own messages (a user can't "read" their own message) and is idempotent (skips already-`read` messages); broadcasts the list of updated message IDs to the room
-- **`typing:start` / `typing:stop` handlers** (`src/sockets/handlers/typing.handler.ts`) — ephemeral, non-persisted signals broadcast to *other* room members only (`socket.to()`, excluding the sender, so users never see their own typing indicator echoed back); validates conversation membership before broadcasting, fails silently (no ack) since typing indicators are best-effort UI hints
+- **`typing:start` / `typing:stop` handlers** (`src/sockets/handlers/typing.handler.ts`) — ephemeral, non-persisted signals broadcast to _other_ room members only (`socket.to()`, excluding the sender, so users never see their own typing indicator echoed back); validates conversation membership before broadcasting, fails silently (no ack) since typing indicators are best-effort UI hints
 - **Zod validators** (`src/validators/message.validator.ts`) — `messageDeliveredSchema`, `messageReadSchema`, `typingSchema`
 - **Extended typed Socket.io events** (`src/types/socket.d.ts`) — `MessageDeliveredPayload/Event`, `MessageReadPayload/Event`, `TypingPayload`/`TypingEvent`
 - **Integration tests** (Jest + `socket.io-client`) — 8 tests: typing broadcast to others but not self, typing:stop broadcast, typing suppressed for non-members (edge case), delivery status update + broadcast (happy path), delivery rejected for non-members (edge case), bulk read receipt + broadcast (happy path), own messages excluded from read receipts (edge case), invalid message ID format rejected (edge case)
@@ -102,9 +106,10 @@
 ![Phase 5 — Presence (Online/Offline)](./Phase%205.svg)
 
 **What was implemented:**
+
 - **`presence.service.ts`** (`src/services/presence.service.ts`) — in-memory, reference-counted active-connection tracking per user (`Map<userId, Set<socketId>>`), supporting multiple simultaneous devices/tabs: a user only flips to `online` on their FIRST connection and only flips to `offline` after their LAST connection closes (opening a 2nd tab doesn't re-trigger `online`; closing one of two tabs doesn't incorrectly mark the user offline)
 - **`setUserOnline()` / `setUserOffline()`** — persist `status` to MongoDB; `setUserOffline()` also stamps `lastSeen` to the current time
-- **`autoJoinConversationRooms()`** (`src/sockets/handlers/presence.handler.ts`) — every new socket connection automatically joins the Socket.io rooms for all of the user's existing conversations (no manual `conversation:join` needed just to *receive* presence/message/typing/receipt broadcasts — explicit `conversation:join` remains useful for conversations created after connecting, until reconnect)
+- **`autoJoinConversationRooms()`** (`src/sockets/handlers/presence.handler.ts`) — every new socket connection automatically joins the Socket.io rooms for all of the user's existing conversations (no manual `conversation:join` needed just to _receive_ presence/message/typing/receipt broadcasts — explicit `conversation:join` remains useful for conversations created after connecting, until reconnect)
 - **`handleUserConnect()` / `handleUserDisconnect()`** — on first-connection/last-disconnection, update DB status and broadcast `user:online`/`user:offline` (with `lastSeen`) to every conversation room the user belongs to
 - **Extended typed Socket.io events** (`src/types/socket.d.ts`) — added `PresenceEvent`, `user:online`/`user:offline` server-to-client events
 - **Integration tests** (Jest + `socket.io-client`) — 4 tests: `user:online` broadcast to conversation members on connect, `user:offline` broadcast with `lastSeen` on disconnect, user stays online while any other tab/device remains connected (edge case), presence not broadcast to non-member conversations (edge case)
@@ -118,7 +123,9 @@
 ---
 
 ### Phase 6 — Polish
+
 **What was implemented:**
+
 - **Unread message counts** (`listConversations()` in `src/services/conversation.service.ts`) — computed live via a MongoDB aggregation pipeline per call to `GET /api/conversations`; counts messages from OTHER members not yet marked `read`, correctly excluding the caller's own sent messages (mirrors the same exclusion logic used by the Phase 4 `message:read` handler). Returned as a top-level `unreadCount` field alongside each conversation in the REST response.
 - **Input sanitization** (`src/utils/sanitize.ts`) — `stripHtmlTags()` strips well-formed HTML tag sequences (`<script>`, `<img onerror>`, etc.) from message text as defense-in-depth XSS mitigation, applied via a Zod `.transform()` in `sendMessageSchema`; length validation runs AFTER sanitization so a tag-only message (e.g. `<b></b>`) is correctly rejected as empty rather than silently persisted as an empty string. **Documented assumption:** this is a server-side safety net, not a substitute for correct client-side rendering — every client must render message text as plain text, never via unescaped `innerHTML`/`dangerouslySetInnerHTML`.
 - **Message pagination review** — the cursor-based (`before` timestamp) pagination implemented in Phase 1 (`GET /api/conversations/:id/messages`) was reviewed and confirmed to already satisfy the Phase 6 "infinite scroll" requirement: newest-first ordering, indexed `(conversationId, createdAt)` compound index, `hasMore`/`nextCursor` response fields designed for incremental loading. No changes were needed.
@@ -132,9 +139,10 @@
 ---
 
 ### Phase 7 — Redis Adapter, Rate Limiting, Docker, CI/CD
+
 **What was implemented:**
 
-- **Redis adapter for Socket.io** (`src/config/redis.ts`, wired in `src/sockets/index.ts`) — opt-in via `REDIS_ENABLED=true` (defaults to `false` so single-instance local dev/tests don't require a running Redis server). Creates the pub/sub client pair required by `@socket.io/redis-adapter`, enabling events emitted on one server instance (e.g. `message:new`) to be relayed to clients connected to a *different* instance behind a load balancer — the key requirement for horizontally scaling the WebSocket layer.
+- **Redis adapter for Socket.io** (`src/config/redis.ts`, wired in `src/sockets/index.ts`) — opt-in via `REDIS_ENABLED=true` (defaults to `false` so single-instance local dev/tests don't require a running Redis server). Creates the pub/sub client pair required by `@socket.io/redis-adapter`, enabling events emitted on one server instance (e.g. `message:new`) to be relayed to clients connected to a _different_ instance behind a load balancer — the key requirement for horizontally scaling the WebSocket layer.
   - **Concretely verified, not just wired up:** [scripts/verify-redis-scaling.js](./scripts/verify-redis-scaling.js) starts two separate Socket.io server instances sharing one Redis instance, connects one client to each, and proves a message sent via Instance A is received by a client connected to Instance B — confirming cross-instance relay actually works (see verification log in project history).
 - **REST rate limiting** (`src/middlewares/rateLimiter.middleware.ts`) — `express-rate-limit` applied to `/api/auth/signup` and `/api/auth/login` (default: 20 requests / 15 min per IP), mitigating brute-force credential guessing and signup spam. Automatically disabled when `NODE_ENV=test` so test suites aren't throttled.
 - **Socket.io rate limiting** (`src/middlewares/socketRateLimit.middleware.ts`) — custom sliding-window counter (default: 10 messages / 10s), keyed per **userId** (not socket ID, so a user can't bypass it by opening extra tabs) applied to `message:send`. Returns a clear rate-limit-exceeded error via the ack callback rather than silently dropping the message.
@@ -145,6 +153,7 @@
 **Used for:** These are the "I understand production concerns beyond just making it work" additions — horizontal scalability (Redis adapter), basic abuse prevention (rate limiting on both REST and WebSocket surfaces), reproducible deployable artifacts (Docker), and automated quality gates on every push/PR (CI).
 
 **Design notes (documented limitations, consistent with the rest of this project's honesty about scope):**
+
 - Both the Socket.io rate limiter (this phase) and the presence connection-counter (Phase 5) are currently **process-local in-memory state**. This is correct for a single instance; true multi-instance rate limiting / presence would require migrating these counters to Redis (e.g. `INCR`+`EXPIRE`) — the Redis connection this phase establishes is the natural foundation for that future work, but the migration itself was not in scope for v1.
 - REST rate limiting is IP-keyed (the `express-rate-limit` default), which is imprecise behind certain proxy/NAT setups without correctly configured `trust proxy` settings — acceptable for this project's scope, documented for production hardening.
 

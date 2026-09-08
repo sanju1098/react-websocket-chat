@@ -14,7 +14,11 @@ let port: number;
 
 async function createUser(username: string, email: string) {
   const user = await User.create({ username, email, passwordHash: 'irrelevant-for-socket-tests' });
-  const token = signToken({ userId: user._id.toString(), username: user.username, email: user.email });
+  const token = signToken({
+    userId: user._id.toString(),
+    username: user.username,
+    email: user.email,
+  });
   return { user, token };
 }
 
@@ -64,7 +68,10 @@ describe('message:send / message:new', () => {
     const { user: userA, token: tokenA } = await createUser('msgUserA', 'msguserA@example.com');
     const { user: userB, token: tokenB } = await createUser('msgUserB', 'msguserB@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
 
     const clientA = await connectClient(tokenA);
     const clientB = await connectClient(tokenB);
@@ -106,7 +113,10 @@ describe('message:send / message:new', () => {
     const { user: userB } = await createUser('msgUserD', 'msguserD@example.com');
     const { user: userE } = await createUser('msgUserE', 'msguserE@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userB._id, userE._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userB._id, userE._id],
+    });
 
     const clientA = await connectClient(tokenA);
 
@@ -131,11 +141,18 @@ describe('message:send / message:new', () => {
     const { user: userA, token: tokenA } = await createUser('msgUserF', 'msguserF@example.com');
     const { user: userB } = await createUser('msgUserG', 'msguserG@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
     const clientA = await connectClient(tokenA);
 
     const ack = await new Promise<{ success: boolean; message?: string }>((resolve) => {
-      clientA.emit('message:send', { conversationId: conversation._id.toString(), text: '   ' }, resolve);
+      clientA.emit(
+        'message:send',
+        { conversationId: conversation._id.toString(), text: '   ' },
+        resolve
+      );
     });
 
     expect(ack.success).toBe(false);
@@ -162,7 +179,10 @@ describe('message:send / message:new', () => {
     const { user: userA, token: tokenA } = await createUser('msgUserI', 'msguserI@example.com');
     const { user: userB } = await createUser('msgUserJ', 'msguserJ@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
     const clientA = await connectClient(tokenA);
 
     const ack = await new Promise<{ success: boolean; data?: { text: string } }>((resolve) => {
@@ -187,7 +207,10 @@ describe('message:send / message:new', () => {
     const { user: userA, token: tokenA } = await createUser('msgUserK', 'msguserK@example.com');
     const { user: userB } = await createUser('msgUserL', 'msguserL@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
     const clientA = await connectClient(tokenA);
 
     const ack = await new Promise<{ success: boolean; message?: string }>((resolve) => {

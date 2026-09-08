@@ -26,7 +26,3 @@ build/
 
 # TypeScript
 *.tsbuildinfo
-
-.slingshot
-.vscode
-.agent

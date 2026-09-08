@@ -49,7 +49,11 @@
               "mode": "raw",
               "raw": "{\n  \"username\": \"alice\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/auth/signup", "host": ["{{baseUrl}}"], "path": ["api", "auth", "signup"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "signup"]
+            }
           }
         },
         {
@@ -74,7 +78,11 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
           }
         },
         {
@@ -82,7 +90,11 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
           }
         }
       ]
@@ -115,7 +127,11 @@
               "mode": "raw",
               "raw": "{\n  \"type\": \"1:1\",\n  \"members\": [\"{{otherUserId}}\"]\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/conversations", "host": ["{{baseUrl}}"], "path": ["api", "conversations"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversations"]
+            }
           }
         },
         {
@@ -130,7 +146,11 @@
               "mode": "raw",
               "raw": "{\n  \"type\": \"group\",\n  \"name\": \"Project Team\",\n  \"members\": [\"{{otherUserId}}\"]\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/conversations", "host": ["{{baseUrl}}"], "path": ["api", "conversations"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversations"]
+            }
           }
         },
         {
@@ -138,7 +158,11 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/conversations", "host": ["{{baseUrl}}"], "path": ["api", "conversations"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversations"]
+            }
           }
         },
         {
@@ -150,7 +174,10 @@
               "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?limit=20",
               "host": ["{{baseUrl}}"],
               "path": ["api", "conversations", "{{conversationId}}", "messages"],
-              "query": [{ "key": "limit", "value": "20" }, { "key": "before", "value": "", "disabled": true }]
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "before", "value": "", "disabled": true }
+              ]
             }
           }
         }

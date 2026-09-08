@@ -13,7 +13,11 @@ let port: number;
 
 async function createUser(username: string, email: string) {
   const user = await User.create({ username, email, passwordHash: 'irrelevant-for-socket-tests' });
-  const token = signToken({ userId: user._id.toString(), username: user.username, email: user.email });
+  const token = signToken({
+    userId: user._id.toString(),
+    username: user.username,
+    email: user.email,
+  });
   return { user, token };
 }
 

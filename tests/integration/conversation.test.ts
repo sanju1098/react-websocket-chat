@@ -5,7 +5,10 @@ import User from '../../src/models/User.model';
 import Conversation from '../../src/models/Conversation.model';
 import Message from '../../src/models/Message.model';
 
-async function createUserAndGetToken(username: string, email: string): Promise<{ token: string; userId: string }> {
+async function createUserAndGetToken(
+  username: string,
+  email: string
+): Promise<{ token: string; userId: string }> {
   const res = await request(app).post('/api/auth/signup').send({
     username,
     email,
@@ -43,7 +46,9 @@ describe('POST /api/conversations', () => {
   });
 
   it('rejects requests without auth token with 401 (edge case)', async () => {
-    const res = await request(app).post('/api/conversations').send({ type: '1:1', members: ['x'] });
+    const res = await request(app)
+      .post('/api/conversations')
+      .send({ type: '1:1', members: ['x'] });
     expect(res.status).toBe(401);
   });
 
@@ -100,7 +105,7 @@ describe('GET /api/conversations', () => {
     expect(res.body.data.conversations[0].unreadCount).toBe(0);
   });
 
-  it('excludes the recipient\'s own sent messages from their unreadCount (edge case)', async () => {
+  it("excludes the recipient's own sent messages from their unreadCount (edge case)", async () => {
     const userA = await createUserAndGetToken('userA7', 'usera7@example.com');
     const userB = await createUserAndGetToken('userB7', 'userb7@example.com');
 

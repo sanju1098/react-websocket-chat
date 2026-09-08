@@ -9,9 +9,7 @@ import { AuthContext } from './auth-context';
 const TOKEN_STORAGE_KEY = 'chat_token';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem(TOKEN_STORAGE_KEY),
-  );
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY));
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,19 +65,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const signup = useCallback(
-    async (username: string, email: string, password: string) => {
-      setError(null);
-      try {
-        const res = await signupRequest(username, email, password);
-        persistSession(res.token, res.user);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Signup failed');
-        throw err;
-      }
-    },
-    [],
-  );
+  const signup = useCallback(async (username: string, email: string, password: string) => {
+    setError(null);
+    try {
+      const res = await signupRequest(username, email, password);
+      persistSession(res.token, res.user);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Signup failed');
+      throw err;
+    }
+  }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
@@ -90,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ user, token, loading, error, login, signup, logout }),
-    [user, token, loading, error, login, signup, logout],
+    [user, token, loading, error, login, signup, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

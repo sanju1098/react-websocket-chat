@@ -1,11 +1,7 @@
 import { Socket } from 'socket.io';
 import { isConversationMember } from '../../services/conversation.service';
 import logger from '../../utils/logger';
-import {
-  ClientToServerEvents,
-  ServerToClientEvents,
-  SocketAck,
-} from '../../types/socket';
+import { ClientToServerEvents, ServerToClientEvents, SocketAck } from '../../types/socket';
 
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
 
@@ -34,15 +30,18 @@ export function registerConnectionHandlers(socket: AppSocket): void {
     }
   });
 
-  socket.on('conversation:leave', async (conversationId: string, ack?: (res: SocketAck) => void) => {
-    try {
-      await socket.leave(conversationId);
-      logger.info(`Socket ${socket.id} (user ${userId}) left room ${conversationId}`);
-      ack?.({ success: true });
-    } catch (error) {
-      const err = error as Error;
-      logger.error(`conversation:leave error: ${err.message}`);
-      ack?.({ success: false, message: 'Failed to leave conversation' });
+  socket.on(
+    'conversation:leave',
+    async (conversationId: string, ack?: (res: SocketAck) => void) => {
+      try {
+        await socket.leave(conversationId);
+        logger.info(`Socket ${socket.id} (user ${userId}) left room ${conversationId}`);
+        ack?.({ success: true });
+      } catch (error) {
+        const err = error as Error;
+        logger.error(`conversation:leave error: ${err.message}`);
+        ack?.({ success: false, message: 'Failed to leave conversation' });
+      }
     }
-  });
+  );
 }

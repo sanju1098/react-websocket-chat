@@ -17,6 +17,3 @@ APIDoc.md
 postman_collection.json
 scripts
 *.svg
-.slingshot
-.vscode.agent
-.agent

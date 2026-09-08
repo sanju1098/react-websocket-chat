@@ -3,12 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createConversation, listConversations } from '../lib/api';
 import { getSocket } from '../lib/socket';
-import type {
-  Conversation,
-  ConversationType,
-  Message,
-  PresencePayload,
-} from '../types';
+import type { Conversation, ConversationType, Message, PresencePayload } from '../types';
 
 export function useConversations(token: string | null) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -59,9 +54,9 @@ export function useConversations(token: string | null) {
           members: conv.members.map((m) =>
             m._id === payload.userId
               ? { ...m, status: payload.status, lastSeen: payload.lastSeen }
-              : m,
+              : m
           ),
-        })),
+        }))
       );
     }
 
@@ -86,7 +81,7 @@ export function useConversations(token: string | null) {
       });
       return conversation;
     },
-    [token],
+    [token]
   );
 
   return { conversations, loading, error, refresh, startConversation };

@@ -19,9 +19,7 @@ function getConversationLabel(conversation: Conversation, currentUserId: string)
 }
 
 function isOtherMemberOnline(conversation: Conversation, currentUserId: string): boolean {
-  return conversation.members.some(
-    (m: User) => m._id !== currentUserId && m.status === 'online',
-  );
+  return conversation.members.some((m: User) => m._id !== currentUserId && m.status === 'online');
 }
 
 export default function ConversationList({

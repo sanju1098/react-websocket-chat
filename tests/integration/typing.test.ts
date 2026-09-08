@@ -13,7 +13,11 @@ let port: number;
 
 async function createUser(username: string, email: string) {
   const user = await User.create({ username, email, passwordHash: 'irrelevant-for-socket-tests' });
-  const token = signToken({ userId: user._id.toString(), username: user.username, email: user.email });
+  const token = signToken({
+    userId: user._id.toString(),
+    username: user.username,
+    email: user.email,
+  });
   return { user, token };
 }
 
@@ -63,7 +67,10 @@ describe('typing:start / typing:stop', () => {
     const { user: userA, token: tokenA } = await createUser('typeUserA', 'typeusera@example.com');
     const { user: userB, token: tokenB } = await createUser('typeUserB', 'typeuserb@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
 
     const clientA = await connectClient(tokenA);
     const clientB = await connectClient(tokenB);
@@ -79,7 +86,11 @@ describe('typing:start / typing:stop', () => {
 
     clientA.emit('typing:start', { conversationId: conversation._id.toString() });
 
-    const event = (await receivedByB) as { conversationId: string; userId: string; username: string };
+    const event = (await receivedByB) as {
+      conversationId: string;
+      userId: string;
+      username: string;
+    };
     expect(event.username).toBe('typeUserA');
     expect(event.conversationId).toBe(conversation._id.toString());
 
@@ -94,7 +105,10 @@ describe('typing:start / typing:stop', () => {
     const { user: userA, token: tokenA } = await createUser('typeUserC', 'typeuserc@example.com');
     const { user: userB, token: tokenB } = await createUser('typeUserD', 'typeuserd@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
 
     const clientA = await connectClient(tokenA);
     const clientB = await connectClient(tokenB);
@@ -117,7 +131,10 @@ describe('typing:start / typing:stop', () => {
     const { user: userB, token: tokenB } = await createUser('typeUserF', 'typeuserf@example.com');
     const { user: userC } = await createUser('typeUserG', 'typeuserg@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userB._id, userC._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userB._id, userC._id],
+    });
 
     const clientA = await connectClient(tokenA);
     const clientB = await connectClient(tokenB);

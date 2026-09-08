@@ -1,11 +1,5 @@
 // Thin REST API client for the Real-Time Chat backend (see APIDoc.md).
-import type {
-  AuthResponse,
-  Conversation,
-  ConversationType,
-  MessagesPage,
-  User,
-} from '../types';
+import type { AuthResponse, Conversation, ConversationType, MessagesPage, User } from '../types';
 
 const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
@@ -18,7 +12,7 @@ interface ApiEnvelope<T> {
 async function request<T>(
   path: string,
   options: RequestInit = {},
-  token?: string | null,
+  token?: string | null
 ): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -38,11 +32,7 @@ async function request<T>(
   return json.data as T;
 }
 
-export function signup(
-  username: string,
-  email: string,
-  password: string,
-): Promise<AuthResponse> {
+export function signup(username: string, email: string, password: string): Promise<AuthResponse> {
   return request<AuthResponse>('/api/auth/signup', {
     method: 'POST',
     body: JSON.stringify({ username, email, password }),
@@ -60,27 +50,21 @@ export function getMe(token: string): Promise<{ user: AuthResponse['user'] }> {
   return request('/api/auth/me', { method: 'GET' }, token);
 }
 
-export function listConversations(
-  token: string,
-): Promise<{ conversations: Conversation[] }> {
+export function listConversations(token: string): Promise<{ conversations: Conversation[] }> {
   return request('/api/conversations', { method: 'GET' }, token);
 }
 
 export function createConversation(
   token: string,
-  payload: { type: ConversationType; members: string[]; name?: string },
+  payload: { type: ConversationType; members: string[]; name?: string }
 ): Promise<{ conversation: Conversation }> {
-  return request(
-    '/api/conversations',
-    { method: 'POST', body: JSON.stringify(payload) },
-    token,
-  );
+  return request('/api/conversations', { method: 'POST', body: JSON.stringify(payload) }, token);
 }
 
 export function getMessages(
   token: string,
   conversationId: string,
-  params: { limit?: number; before?: string } = {},
+  params: { limit?: number; before?: string } = {}
 ): Promise<MessagesPage> {
   const query = new URLSearchParams();
   if (params.limit) query.set('limit', String(params.limit));
@@ -89,13 +73,13 @@ export function getMessages(
   return request(
     `/api/conversations/${conversationId}/messages${qs ? `?${qs}` : ''}`,
     { method: 'GET' },
-    token,
+    token
   );
 }
 
 export function listUsers(
   token: string,
-  params: { search?: string; limit?: number } = {},
+  params: { search?: string; limit?: number } = {}
 ): Promise<{ users: User[] }> {
   const query = new URLSearchParams();
   if (params.search) query.set('search', params.search);

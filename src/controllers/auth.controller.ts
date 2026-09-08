@@ -2,7 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import * as authService from '../services/auth.service';
 import { AppError } from '../middlewares/errorHandler.middleware';
 
-export async function signupHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function signupHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   try {
     const { user, token } = await authService.signup(req.body);
     res.status(201).json({

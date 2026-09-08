@@ -16,11 +16,13 @@ See the [root README](../README.md) for full project setup instructions covering
 ## Setup
 
 **1. Install dependencies**
+
 ```bash
 npm install
 ```
 
 **2. Configure environment**
+
 ```bash
 cp .env.example .env
 # Defaults to VITE_API_BASE_URL=http://localhost:5000
@@ -31,9 +33,11 @@ cp .env.example .env
 The Vite dev server runs on `http://localhost:5173` by default. Set `CLIENT_ORIGIN=http://localhost:5173` in the backend's `.env` (project root) and restart the backend, otherwise REST/Socket.io requests will be blocked by CORS.
 
 **4. Start the dev server**
+
 ```bash
 npm run dev
 ```
+
 Open the printed local URL (typically `http://localhost:5173`).
 
 ---
@@ -66,8 +70,8 @@ src/
 
 ## Environment Variables
 
-| Variable | Purpose | Default |
-|---|---|---|
+| Variable            | Purpose                                    | Default                 |
+| ------------------- | ------------------------------------------ | ----------------------- |
 | `VITE_API_BASE_URL` | Base URL of the backend (REST + Socket.io) | `http://localhost:5000` |
 
 See [.env.example](./.env.example).

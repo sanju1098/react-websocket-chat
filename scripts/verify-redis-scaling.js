@@ -48,8 +48,16 @@ async function main() {
     members: [userA._id, userB._id],
   });
 
-  const tokenA = signToken({ userId: userA._id.toString(), username: userA.username, email: userA.email });
-  const tokenB = signToken({ userId: userB._id.toString(), username: userB.username, email: userB.email });
+  const tokenA = signToken({
+    userId: userA._id.toString(),
+    username: userA.username,
+    email: userA.email,
+  });
+  const tokenB = signToken({
+    userId: userB._id.toString(),
+    username: userB.username,
+    email: userB.email,
+  });
 
   // --- Instance A ---
   const httpServerA = http.createServer();
@@ -66,8 +74,14 @@ async function main() {
   console.log(`Instance A listening on :${portA}`);
   console.log(`Instance B listening on :${portB}`);
 
-  const clientA = ioClient(`http://localhost:${portA}`, { auth: { token: tokenA }, transports: ['websocket'] });
-  const clientB = ioClient(`http://localhost:${portB}`, { auth: { token: tokenB }, transports: ['websocket'] });
+  const clientA = ioClient(`http://localhost:${portA}`, {
+    auth: { token: tokenA },
+    transports: ['websocket'],
+  });
+  const clientB = ioClient(`http://localhost:${portB}`, {
+    auth: { token: tokenB },
+    transports: ['websocket'],
+  });
 
   await Promise.all([
     new Promise((resolve, reject) => {
@@ -82,8 +96,12 @@ async function main() {
   console.log('Both clients connected (to DIFFERENT server instances).');
 
   await Promise.all([
-    new Promise((resolve) => clientA.emit('conversation:join', conversation._id.toString(), resolve)),
-    new Promise((resolve) => clientB.emit('conversation:join', conversation._id.toString(), resolve)),
+    new Promise((resolve) =>
+      clientA.emit('conversation:join', conversation._id.toString(), resolve)
+    ),
+    new Promise((resolve) =>
+      clientB.emit('conversation:join', conversation._id.toString(), resolve)
+    ),
   ]);
   console.log('Both clients joined the conversation room on their respective instances.');
 
@@ -91,16 +109,27 @@ async function main() {
 
   console.log('Sending message via client A (connected to Instance A)...');
   const ack = await new Promise((resolve) =>
-    clientA.emit('message:send', { conversationId: conversation._id.toString(), text: 'Cross-instance hello!' }, resolve)
+    clientA.emit(
+      'message:send',
+      { conversationId: conversation._id.toString(), text: 'Cross-instance hello!' },
+      resolve
+    )
   );
   console.log('Instance A ack:', ack);
 
   const message = await Promise.race([
     receivedOnB,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT: message:new not received on Instance B within 5s')), 5000)),
+    new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error('TIMEOUT: message:new not received on Instance B within 5s')),
+        5000
+      )
+    ),
   ]);
 
-  console.log('\nSUCCESS: Client B (connected to Instance B) received message:new relayed via Redis from Instance A:');
+  console.log(
+    '\nSUCCESS: Client B (connected to Instance B) received message:new relayed via Redis from Instance A:'
+  );
   console.log(JSON.stringify(message, null, 2));
 
   clientA.disconnect();

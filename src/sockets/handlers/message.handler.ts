@@ -43,45 +43,48 @@ function toSocketPayload(message: IMessage): SocketMessagePayload {
 export function registerMessageHandlers(socket: AppSocket): void {
   const { userId } = socket.data.user;
 
-  socket.on('message:send', async (payload: SendMessagePayload, ack?: (res: MessageSendAck) => void) => {
-    try {
-      if (!checkMessageRateLimit(userId)) {
-        logger.warn(`Rate limit exceeded for user ${userId} on message:send`);
-        ack?.({
-          success: false,
-          message: `Rate limit exceeded: max ${env.socketRateLimitMax} messages per ${
-            env.socketRateLimitWindowMs / 1000
-          }s. Please slow down.`,
-        });
-        return;
+  socket.on(
+    'message:send',
+    async (payload: SendMessagePayload, ack?: (res: MessageSendAck) => void) => {
+      try {
+        if (!checkMessageRateLimit(userId)) {
+          logger.warn(`Rate limit exceeded for user ${userId} on message:send`);
+          ack?.({
+            success: false,
+            message: `Rate limit exceeded: max ${env.socketRateLimitMax} messages per ${
+              env.socketRateLimitWindowMs / 1000
+            }s. Please slow down.`,
+          });
+          return;
+        }
+
+        const input = sendMessageSchema.parse(payload);
+        const message = await createMessage(userId, input);
+        const socketPayload = toSocketPayload(message);
+
+        // Broadcast to all members currently in the room, including the sender's
+        // other connections. Room name == conversationId (see connection.handler.ts).
+        socket.nsp.to(input.conversationId).emit('message:new', socketPayload);
+
+        logger.info(
+          `Message sent by user ${userId} in conversation ${input.conversationId} (message ${socketPayload._id})`
+        );
+
+        ack?.({ success: true, data: socketPayload });
+      } catch (error) {
+        if (error instanceof ZodError) {
+          const message = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; ');
+          ack?.({ success: false, message: `Validation error: ${message}` });
+          return;
+        }
+        if (error instanceof AppError) {
+          ack?.({ success: false, message: error.message });
+          return;
+        }
+        const err = error as Error;
+        logger.error(`message:send error: ${err.message}`);
+        ack?.({ success: false, message: 'Failed to send message' });
       }
-
-      const input = sendMessageSchema.parse(payload);
-      const message = await createMessage(userId, input);
-      const socketPayload = toSocketPayload(message);
-
-      // Broadcast to all members currently in the room, including the sender's
-      // other connections. Room name == conversationId (see connection.handler.ts).
-      socket.nsp.to(input.conversationId).emit('message:new', socketPayload);
-
-      logger.info(
-        `Message sent by user ${userId} in conversation ${input.conversationId} (message ${socketPayload._id})`
-      );
-
-      ack?.({ success: true, data: socketPayload });
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const message = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; ');
-        ack?.({ success: false, message: `Validation error: ${message}` });
-        return;
-      }
-      if (error instanceof AppError) {
-        ack?.({ success: false, message: error.message });
-        return;
-      }
-      const err = error as Error;
-      logger.error(`message:send error: ${err.message}`);
-      ack?.({ success: false, message: 'Failed to send message' });
     }
-  });
+  );
 }

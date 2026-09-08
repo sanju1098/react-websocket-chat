@@ -15,12 +15,14 @@ export default function ChatPage() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
 
-  const { messages, loading, typingUsers, sendMessage, markRead, notifyTyping } =
-    useMessages(token, activeConversationId);
+  const { messages, loading, typingUsers, sendMessage, markRead, notifyTyping } = useMessages(
+    token,
+    activeConversationId
+  );
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c._id === activeConversationId) || null,
-    [conversations, activeConversationId],
+    [conversations, activeConversationId]
   );
 
   const title = useMemo(() => {

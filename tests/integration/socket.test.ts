@@ -13,7 +13,11 @@ let port: number;
 
 async function createUser(username: string, email: string) {
   const user = await User.create({ username, email, passwordHash: 'irrelevant-for-socket-tests' });
-  const token = signToken({ userId: user._id.toString(), username: user.username, email: user.email });
+  const token = signToken({
+    userId: user._id.toString(),
+    username: user.username,
+    email: user.email,
+  });
   return { user, token };
 }
 
@@ -130,7 +134,9 @@ describe('conversation:join / conversation:leave', () => {
     });
 
     const client = await connectClient(tokenA);
-    await new Promise((resolve) => client.emit('conversation:join', conversation._id.toString(), resolve));
+    await new Promise((resolve) =>
+      client.emit('conversation:join', conversation._id.toString(), resolve)
+    );
 
     const leaveAck = await new Promise((resolve) => {
       client.emit('conversation:leave', conversation._id.toString(), resolve);

@@ -17,9 +17,7 @@ export function validate(schema: ZodTypeAny, part: RequestPart = 'body') {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const message = error.errors
-          .map((e) => `${e.path.join('.')}: ${e.message}`)
-          .join('; ');
+        const message = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; ');
         next(new AppError(`Validation error: ${message}`, 400));
         return;
       }

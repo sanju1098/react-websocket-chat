@@ -50,12 +50,7 @@ export default function AuthPage() {
 
         <label className="field">
           <span>Email</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </label>
 
         <label className="field">

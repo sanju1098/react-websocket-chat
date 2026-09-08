@@ -16,7 +16,10 @@ type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
 export function registerTypingHandlers(socket: AppSocket): void {
   const { userId, username } = socket.data.user;
 
-  async function broadcastTyping(event: 'typing:start' | 'typing:stop', payload: TypingPayload): Promise<void> {
+  async function broadcastTyping(
+    event: 'typing:start' | 'typing:stop',
+    payload: TypingPayload
+  ): Promise<void> {
     const parsed = typingSchema.safeParse(payload);
     if (!parsed.success) {
       logger.warn(`${event} error: invalid payload from user ${userId}`);

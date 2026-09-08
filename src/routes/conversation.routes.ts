@@ -6,7 +6,10 @@ import {
 } from '../controllers/conversation.controller';
 import { validate } from '../middlewares/validate.middleware';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import { createConversationSchema, paginationQuerySchema } from '../validators/conversation.validator';
+import {
+  createConversationSchema,
+  paginationQuerySchema,
+} from '../validators/conversation.validator';
 
 const router = Router();
 

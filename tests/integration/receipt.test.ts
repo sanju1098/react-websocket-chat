@@ -14,7 +14,11 @@ let port: number;
 
 async function createUser(username: string, email: string) {
   const user = await User.create({ username, email, passwordHash: 'irrelevant-for-socket-tests' });
-  const token = signToken({ userId: user._id.toString(), username: user.username, email: user.email });
+  const token = signToken({
+    userId: user._id.toString(),
+    username: user.username,
+    email: user.email,
+  });
   return { user, token };
 }
 
@@ -34,7 +38,11 @@ function joinRoom(client: ClientSocket, conversationId: string): Promise<unknown
   return new Promise((resolve) => client.emit('conversation:join', conversationId, resolve));
 }
 
-function sendMessage(client: ClientSocket, conversationId: string, text: string): Promise<{ data: { _id: string } }> {
+function sendMessage(
+  client: ClientSocket,
+  conversationId: string,
+  text: string
+): Promise<{ data: { _id: string } }> {
   return new Promise((resolve) => client.emit('message:send', { conversationId, text }, resolve));
 }
 
@@ -68,7 +76,10 @@ describe('message:delivered', () => {
     const { user: userA, token: tokenA } = await createUser('recvUserA', 'recvusera@example.com');
     const { user: userB, token: tokenB } = await createUser('recvUserB', 'recvuserb@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
     const clientA = await connectClient(tokenA);
     const clientB = await connectClient(tokenB);
     await joinRoom(clientA, conversation._id.toString());
@@ -100,7 +111,10 @@ describe('message:delivered', () => {
     const { user: userB } = await createUser('recvUserD', 'recvuserd@example.com');
     const { token: tokenE } = await createUser('recvUserE', 'recvusere@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
     const clientA = await connectClient(tokenA);
     await joinRoom(clientA, conversation._id.toString());
     const sendAck = await sendMessage(clientA, conversation._id.toString(), 'secret');
@@ -123,7 +137,10 @@ describe('message:read', () => {
     const { user: userA, token: tokenA } = await createUser('readUserA', 'readusera@example.com');
     const { user: userB, token: tokenB } = await createUser('readUserB', 'readuserb@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
     const clientA = await connectClient(tokenA);
     const clientB = await connectClient(tokenB);
     await joinRoom(clientA, conversation._id.toString());
@@ -157,11 +174,14 @@ describe('message:read', () => {
     clientB.disconnect();
   });
 
-  it('does not mark the reader\'s own messages as read (edge case)', async () => {
+  it("does not mark the reader's own messages as read (edge case)", async () => {
     const { user: userA, token: tokenA } = await createUser('readUserC', 'readuserc@example.com');
     const { user: userB } = await createUser('readUserD', 'readuserd@example.com');
 
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
     const clientA = await connectClient(tokenA);
     await joinRoom(clientA, conversation._id.toString());
 
@@ -186,7 +206,10 @@ describe('message:read', () => {
   it('rejects invalid message ID format (edge case)', async () => {
     const { user: userA, token: tokenA } = await createUser('readUserE', 'readusere@example.com');
     const { user: userB } = await createUser('readUserF', 'readuserf@example.com');
-    const conversation = await Conversation.create({ type: '1:1', members: [userA._id, userB._id] });
+    const conversation = await Conversation.create({
+      type: '1:1',
+      members: [userA._id, userB._id],
+    });
 
     const clientA = await connectClient(tokenA);
     const ack = await new Promise<{ success: boolean; message?: string }>((resolve) => {

@@ -83,7 +83,10 @@ export interface ClientToServerEvents {
   'conversation:join': (conversationId: string, ack?: (response: SocketAck) => void) => void;
   'conversation:leave': (conversationId: string, ack?: (response: SocketAck) => void) => void;
   'message:send': (payload: SendMessagePayload, ack?: (response: MessageSendAck) => void) => void;
-  'message:delivered': (payload: MessageDeliveredPayload, ack?: (response: SocketAck) => void) => void;
+  'message:delivered': (
+    payload: MessageDeliveredPayload,
+    ack?: (response: SocketAck) => void
+  ) => void;
   'message:read': (payload: MessageReadPayload, ack?: (response: SocketAck) => void) => void;
   'typing:start': (payload: TypingPayload) => void;
   'typing:stop': (payload: TypingPayload) => void;

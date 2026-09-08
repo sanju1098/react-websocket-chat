@@ -27,33 +27,36 @@ function ackError(ack: ((res: SocketAck) => void) | undefined, message: string):
 export function registerReceiptHandlers(socket: AppSocket): void {
   const { userId } = socket.data.user;
 
-  socket.on('message:delivered', async (payload: MessageDeliveredPayload, ack?: (res: SocketAck) => void) => {
-    try {
-      const input = messageDeliveredSchema.parse(payload);
-      const { message, conversationId } = await markMessageDelivered(input.messageId, userId);
+  socket.on(
+    'message:delivered',
+    async (payload: MessageDeliveredPayload, ack?: (res: SocketAck) => void) => {
+      try {
+        const input = messageDeliveredSchema.parse(payload);
+        const { message, conversationId } = await markMessageDelivered(input.messageId, userId);
 
-      socket.nsp.to(conversationId).emit('message:delivered', {
-        messageId: message._id.toString(),
-        conversationId,
-        deliveredBy: userId,
-      });
+        socket.nsp.to(conversationId).emit('message:delivered', {
+          messageId: message._id.toString(),
+          conversationId,
+          deliveredBy: userId,
+        });
 
-      logger.info(`Message ${input.messageId} marked delivered by user ${userId}`);
-      ack?.({ success: true });
-    } catch (error) {
-      if (error instanceof ZodError) {
-        ackError(ack, `Validation error: ${error.errors.map((e) => e.message).join('; ')}`);
-        return;
+        logger.info(`Message ${input.messageId} marked delivered by user ${userId}`);
+        ack?.({ success: true });
+      } catch (error) {
+        if (error instanceof ZodError) {
+          ackError(ack, `Validation error: ${error.errors.map((e) => e.message).join('; ')}`);
+          return;
+        }
+        if (error instanceof AppError) {
+          ackError(ack, error.message);
+          return;
+        }
+        const err = error as Error;
+        logger.error(`message:delivered error: ${err.message}`);
+        ackError(ack, 'Failed to mark message delivered');
       }
-      if (error instanceof AppError) {
-        ackError(ack, error.message);
-        return;
-      }
-      const err = error as Error;
-      logger.error(`message:delivered error: ${err.message}`);
-      ackError(ack, 'Failed to mark message delivered');
     }
-  });
+  );
 
   socket.on('message:read', async (payload: MessageReadPayload, ack?: (res: SocketAck) => void) => {
     try {

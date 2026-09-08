@@ -3,12 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getMessages } from '../lib/api';
 import { getSocket } from '../lib/socket';
-import type {
-  Message,
-  MessageDeliveredPayload,
-  MessageReadPayload,
-  TypingPayload,
-} from '../types';
+import type { Message, MessageDeliveredPayload, MessageReadPayload, TypingPayload } from '../types';
 
 const TYPING_STOP_DELAY_MS = 2500;
 
@@ -59,19 +54,15 @@ export function useMessages(token: string | null, conversationId: string | null)
       if (payload.conversationId !== conversationId) return;
       setMessages((prev) =>
         prev.map((m) =>
-          m._id === payload.messageId && m.status === 'sent'
-            ? { ...m, status: 'delivered' }
-            : m,
-        ),
+          m._id === payload.messageId && m.status === 'sent' ? { ...m, status: 'delivered' } : m
+        )
       );
     }
 
     function onRead(payload: MessageReadPayload) {
       if (payload.conversationId !== conversationId) return;
       setMessages((prev) =>
-        prev.map((m) =>
-          payload.messageIds.includes(m._id) ? { ...m, status: 'read' } : m,
-        ),
+        prev.map((m) => (payload.messageIds.includes(m._id) ? { ...m, status: 'read' } : m))
       );
     }
 
@@ -117,10 +108,10 @@ export function useMessages(token: string | null, conversationId: string | null)
           if (!ack.success) {
             setError(ack.message || 'Failed to send message');
           }
-        },
+        }
       );
     },
-    [conversationId],
+    [conversationId]
   );
 
   const markRead = useCallback(
@@ -128,7 +119,7 @@ export function useMessages(token: string | null, conversationId: string | null)
       if (!conversationId) return;
       getSocket()?.emit('message:read', { conversationId, upToMessageId });
     },
-    [conversationId],
+    [conversationId]
   );
 
   const notifyTyping = useCallback(() => {

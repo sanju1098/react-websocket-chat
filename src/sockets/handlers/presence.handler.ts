@@ -57,7 +57,9 @@ export async function handleUserConnect(socket: AppSocket): Promise<void> {
 
   roomIds.forEach((roomId) => socket.nsp.to(roomId).emit('user:online', payload));
 
-  logger.info(`User ${username} (${userId}) is now online — broadcast to ${roomIds.length} conversation(s)`);
+  logger.info(
+    `User ${username} (${userId}) is now online — broadcast to ${roomIds.length} conversation(s)`
+  );
 }
 
 /**
@@ -87,5 +89,7 @@ export async function handleUserDisconnect(socket: AppSocket): Promise<void> {
 
   roomIds.forEach((roomId) => socket.nsp.to(roomId).emit('user:offline', payload));
 
-  logger.info(`User ${username} (${userId}) is now offline — broadcast to ${roomIds.length} conversation(s)`);
+  logger.info(
+    `User ${username} (${userId}) is now offline — broadcast to ${roomIds.length} conversation(s)`
+  );
 }

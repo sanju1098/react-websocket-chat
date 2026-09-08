@@ -75,9 +75,7 @@ export default function ChatWindow({
                     minute: '2-digit',
                   })}
                   {isOwn && (
-                    <span
-                      className={`message-status${message.status === 'read' ? ' read' : ''}`}
-                    >
+                    <span className={`message-status${message.status === 'read' ? ' read' : ''}`}>
                       {' '}
                       {statusLabel(message.status)}
                     </span>
