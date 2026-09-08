@@ -1,0 +1,89 @@
+.chat-window {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-window-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.chat-window-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.chat-window-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.chat-window-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.chat-window-hint {
+  margin: auto;
+  font-size: 14px;
+}
+
+.message-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.message-row.own {
+  justify-content: flex-end;
+}
+
+.message-bubble {
+  max-width: 70%;
+  background: var(--code-bg);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.message-row.own .message-bubble {
+  background: var(--accent-bg);
+}
+
+.message-sender {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.message-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-h);
+  font-size: 15px;
+}
+
+.message-meta {
+  font-size: 11px;
+  align-self: flex-end;
+}
+
+.message-status.read {
+  color: var(--accent);
+}
+
+.typing-indicator {
+  font-size: 13px;
+  font-style: italic;
+  margin: 0;
+}
